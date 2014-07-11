@@ -14,7 +14,7 @@ public class Application {
 			Client c = new Client();
 			c.setName("Rogor99");
 			c.connect("irc.rizon.net");
-			c.getConnection().waitForState(BasicConnection.State.Authenticated);
+			c.getConnection().waitForState(BasicConnection.State.AUTHENTICATED);
 			c.joinChannel("teste89");
 			
 			while (true) {
@@ -34,8 +34,6 @@ public class Application {
 	    			c.connect("irc.rizon.net");
 	            }
 	        }
-	
-	        c.joinChannel("#teste89");
 			
 			*/
 	        
@@ -50,17 +48,6 @@ public class Application {
 			p.println("alo\r\n");
 			
 			*/
-			
-			
-	        /*while ((line = c.read()) != null) {
-	            if (line.startsWith("PING ")) {
-	                // We must respond to PINGs to avoid being disconnected.
-	                
-	                c.getBuffer().buffer("PONG " + line.substring(5) + "\r\n");
-	                c.getBuffer().buffer("PRIVMSG #teste89 :I got pinged!\r\n");
-	        		c.getBuffer().sendBuffers();
-	            }
-	        }*/
 		} finally {
 			scanner.close();
 		}

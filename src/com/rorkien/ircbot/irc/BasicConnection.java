@@ -12,16 +12,16 @@ import com.rorkien.ircbot.utils.QueueBuffer;
 public class BasicConnection implements Runnable {
 	private Client client;
 	private Socket connection;
-	private State connectionState = State.Disconnected;
+	private State connectionState = State.DISCONNECTED;
 	private boolean connectionEnded;
 	private QueueBuffer<String> writeBuffer;
     private BufferedReader readBuffer;
     
     public static enum State {
-    	Disconnected,
-    	Connecting,
-    	Connected,
-    	Authenticated
+    	DISCONNECTED,
+    	CONNECTING,
+    	CONNECTED,
+    	AUTHENTICATED
     }
     
     public synchronized State getState() {
@@ -43,7 +43,7 @@ public class BasicConnection implements Runnable {
 	public BasicConnection(Client client, String host, int port) throws UnknownHostException, IOException {
 		this.client = client;
 		connection = new Socket(host, port);
-		connectionState = State.Connecting;
+		connectionState = State.CONNECTING;
 		
 		writeBuffer = new QueueBuffer<String>(client, connection.getOutputStream());
 		readBuffer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -57,7 +57,7 @@ public class BasicConnection implements Runnable {
 				String in = readBuffer.readLine();
 				client.read(in);
 				
-				if (in.indexOf("004") >= 0) connectionState = State.Authenticated;
+				if (in.indexOf("004") >= 0) connectionState = State.AUTHENTICATED;
 				else if (in.startsWith("PING ")) getWriteBuffer().sendBuffers("PONG " + in.substring(5));
 			} catch (IOException e) {
 				e.printStackTrace();
