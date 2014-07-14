@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import com.rorkien.ircbot.Client;
+import com.rorkien.ircbot.irc.ConnectionHandler;
 
 /**
  * Queue-based implementation wrapping the OutputStream class. 
@@ -13,18 +13,18 @@ import com.rorkien.ircbot.Client;
  * @author Rorkien
  */
 public class QueueBuffer<T> {
-	private Client client;
+	private ConnectionHandler handler;
 	private Queue<T> queue;
 	private PrintWriter writer;
 		
-	public QueueBuffer(Client client, PrintWriter writer) {
-		this.client = client;
+	public QueueBuffer(ConnectionHandler handler, PrintWriter writer) {
+		this.handler = handler;
 		this.writer = writer;
 		this.queue = new PriorityQueue<T>();
 	}
 	
-	public QueueBuffer(Client client, OutputStream stream) {
-		this(client, new PrintWriter(stream));
+	public QueueBuffer(ConnectionHandler handler, OutputStream stream) {
+		this(handler, new PrintWriter(stream));
 	}
 	
 	/**
@@ -37,14 +37,14 @@ public class QueueBuffer<T> {
 	}
 	
 	/**
-	 * Sends a determinate amount of objects, then flushes the output stream.
+	 * Sends a determinate amount of objects, notifies the designed handler, then flushes the output stream.
 	 * 
 	 * @param length the amount of objects to be sent
 	 */
 	public void sendBuffers(int length) {
 		while (length-- > 0) {
 			T message = queue.poll();
-			client.write(message.toString());
+			handler.write(message.toString());
 			writer.println(message);
 			writer.flush();
 		}

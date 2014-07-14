@@ -3,29 +3,22 @@ package com.rorkien.ircbot.irc;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
-import com.rorkien.ircbot.Client;
+import com.rorkien.ircbot.irc.ConnectionHandler.State;
 import com.rorkien.ircbot.utils.QueueBuffer;
 
 public class BasicConnection implements Runnable {
-	private Client client;
+	private ConnectionHandler handler;
+	private ServerSocket listener;
 	private Socket connection;
-	private State connectionState = State.DISCONNECTED;
-	private boolean connectionEnded;
 	private QueueBuffer<String> writeBuffer;
     private BufferedReader readBuffer;
+    private boolean isListener;
     
-    public static enum State {
-    	DISCONNECTED,
-    	CONNECTING,
-    	CONNECTED,
-    	AUTHENTICATED
-    }
-    
-    public synchronized State getState() {
-    	return connectionState;
+    public Socket getConnection() {
+    	return connection;
     }
     
 	public BufferedReader getReadBuffer() {
@@ -35,34 +28,43 @@ public class BasicConnection implements Runnable {
 	public QueueBuffer<String> getWriteBuffer() {
 		return writeBuffer;
 	}
-    
-    public synchronized void waitForState(State state) {
-    	while (getState() != state);
-    }
 	
-	public BasicConnection(Client client, String host, int port) throws UnknownHostException, IOException {
-		this.client = client;
-		connection = new Socket(host, port);
-		connectionState = State.CONNECTING;
+	public BasicConnection(ConnectionHandler handler, Socket connection) throws IOException {
+		this.handler = handler;
+		this.connection = connection;
 		
-		writeBuffer = new QueueBuffer<String>(client, connection.getOutputStream());
+		writeBuffer = new QueueBuffer<String>(handler, connection.getOutputStream());
 		readBuffer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
+		
+		new Thread(this).start();
+	}
+	
+	public BasicConnection(ConnectionHandler handler, ServerSocket listener) {
+		this.handler = handler;
+		this.listener = listener;
+		isListener = true;
+		
 		new Thread(this).start();
 	}
 
 	public void run() {
-		while (!connectionEnded) {
-			try {
-				String in = readBuffer.readLine();
-				client.read(in);
+		try {
+			if (isListener) {
+				connection = listener.accept();
+				writeBuffer = new QueueBuffer<String>(handler, connection.getOutputStream());
+				readBuffer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 				
-				if (in.indexOf("004") >= 0) connectionState = State.AUTHENTICATED;
-				else if (in.startsWith("PING ")) getWriteBuffer().sendBuffers("PONG " + in.substring(5));
-			} catch (IOException e) {
-				e.printStackTrace();
+				handler.connectionState = State.CONNECTED;
 			}
+
+			while (true) {
+				String in = readBuffer.readLine();
+				handler.read(in);
+
+				Thread.yield();
+			}	
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		Thread.yield();
 	}
 }
