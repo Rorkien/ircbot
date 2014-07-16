@@ -30,9 +30,9 @@ Once you are successfully connected, you have access to the input and output buf
 To access the write buffer, you can use the getter in your connection object.
 
 ```java
-				connection.getWriteBuffer().buffer("This is a message!");
-				connection.getWriteBuffer().buffer("This is also a message!");
-				connection.getWriteBuffer().sendBuffers();
+connection.getWriteBuffer().buffer("This is a message!");
+connection.getWriteBuffer().buffer("This is also a message!");
+connection.getWriteBuffer().sendBuffers();
 ```
 
 The *buffer()* method will store a message and will only send it when you decide to, using the *sendBuffers()* method. You can also directly send the message without buffering, by using the *sendBuffers(message)* method.
@@ -45,15 +45,15 @@ Okay, you can connect to networks, send and read messages, but how can i join a 
 IRCBot works with events. Everytime a raw message is send, the assigned event listener will filter it, and call the respective method. In short:
 
 ```java
-  //onConnect is called once you are successfully connected
-	public void onConnect() {
-		connection.joinChannel("SomeChannel"); //Joins a channel
-	}
+//onConnect is called once you are successfully connected
+public void onConnect() {
+connection.joinChannel("SomeChannel"); //Joins a channel
+}
 	
-	//onText is called when a message is send to you, or a channel you are on
-	public void onText(String message) {
-		connection.getWriteBuffer().sendBuffers("Someone said " + message); //Be wary that message contains the message in raw form.	
-	}
+//onText is called when a message is send to you, or a channel you are on
+public void onText(String message) {
+connection.getWriteBuffer().sendBuffers("Someone said " + message); //Be wary that message contains the message in raw form.	
+}
 ```
 
 To use those events, just implement the interface *EventListener* and point it to the connection (like you'd do with an *KeyListener*)
