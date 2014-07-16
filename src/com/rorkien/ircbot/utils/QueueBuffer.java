@@ -5,26 +5,22 @@ import java.io.PrintWriter;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import com.rorkien.ircbot.irc.ConnectionHandler;
-
 /**
  * Queue-based implementation wrapping the OutputStream class. 
  * 
  * @author Rorkien
  */
 public class QueueBuffer<T> {
-	private ConnectionHandler handler;
 	private Queue<T> queue;
 	private PrintWriter writer;
 		
-	public QueueBuffer(ConnectionHandler handler, PrintWriter writer) {
-		this.handler = handler;
+	public QueueBuffer(PrintWriter writer) {
 		this.writer = writer;
 		this.queue = new PriorityQueue<T>();
 	}
 	
-	public QueueBuffer(ConnectionHandler handler, OutputStream stream) {
-		this(handler, new PrintWriter(stream));
+	public QueueBuffer(OutputStream stream) {
+		this(new PrintWriter(stream));
 	}
 	
 	/**
@@ -44,7 +40,6 @@ public class QueueBuffer<T> {
 	public void sendBuffers(int length) {
 		while (length-- > 0) {
 			T message = queue.poll();
-			handler.write(message.toString());
 			writer.println(message);
 			writer.flush();
 		}
@@ -75,5 +70,12 @@ public class QueueBuffer<T> {
 	 */
 	public void sendBuffers() {
 		sendBuffers(queue.size());
+	}
+	
+	/**
+	 * Closes the stream
+	 */
+	public void close() {
+		writer.close();
 	}
 }

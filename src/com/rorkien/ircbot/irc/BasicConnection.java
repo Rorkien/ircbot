@@ -33,7 +33,7 @@ public class BasicConnection implements Runnable {
 		this.handler = handler;
 		this.connection = connection;
 		
-		writeBuffer = new QueueBuffer<String>(handler, connection.getOutputStream());
+		writeBuffer = new QueueBuffer<String>(connection.getOutputStream());
 		readBuffer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 		
 		new Thread(this).start();
@@ -51,20 +51,30 @@ public class BasicConnection implements Runnable {
 		try {
 			if (isListener) {
 				connection = listener.accept();
-				writeBuffer = new QueueBuffer<String>(handler, connection.getOutputStream());
+				writeBuffer = new QueueBuffer<String>(connection.getOutputStream());
 				readBuffer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 				
-				handler.connectionState = State.CONNECTED;
+				handler.setState(State.CONNECTED);
 			}
 
 			while (true) {
 				String in = readBuffer.readLine();
-				handler.read(in);
+				if (in == null) break;
+				handler.fireRawTextEvent(in);
 
 				Thread.yield();
-			}	
+			}		
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				writeBuffer.close();
+				readBuffer.close();
+				connection.close();
+				listener.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
