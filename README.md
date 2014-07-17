@@ -26,7 +26,7 @@ connection.connect("Server", 6667);
 Input and Output
 ======
 
-Once you are successfully connected, you can access the input and output buffers. IRCBot will handle the input buffers automatically, forwarding every message to their respective events listeners.
+Once you are successfully connected, you can access the input and output buffers. IRCBot will handle the input buffers automatically, forwarding every message to their respective event listeners.
 
 To access the write buffer, you can use the getter in your connection object.
 
@@ -52,7 +52,7 @@ public void onConnect() {
 	
 //onText is called when a message directed towards you, via private messaging, ctcp or in a channel you are on.
 public void onText(String message) {
-	//Be wary that *message* contains the message in raw form
+	//Be wary that *message* contains the raw data
 	connection.getWriteBuffer().sendBuffers("Someone said " + message);
 }
 ```
